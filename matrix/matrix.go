@@ -303,6 +303,13 @@ func (m *Matrix) Seq2() iter.Seq2[int, []complex128] {
 	}
 }
 
+// Fdiag applies a function f to the diagonal elements of m.
+func (m *Matrix) Fdiag(f func(v complex128) complex128) {
+	for i := range min(m.Rows, m.Cols) {
+		m.Set(i, i, f(m.At(i, i)))
+	}
+}
+
 // MatMul returns a matrix product of m1, m2, ..., mn.
 // MatMul(A, B, C, D, ...) is ABCD....
 func MatMul(m ...*Matrix) *Matrix {

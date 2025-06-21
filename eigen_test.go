@@ -12,12 +12,6 @@ import (
 	"github.com/itsubaki/decomp/matrix"
 )
 
-func diagF(a *matrix.Matrix, f func(v complex128) complex128) {
-	for i := range min(a.Rows, a.Cols) {
-		a.Set(i, i, f(a.At(i, i)))
-	}
-}
-
 func ExampleEigenJacobi_pow0p5() {
 	x := matrix.New(
 		[]complex128{0, 1},
@@ -25,7 +19,7 @@ func ExampleEigenJacobi_pow0p5() {
 	)
 
 	V, D := decomp.EigenJacobi(x, 10)
-	diagF(D, func(v complex128) complex128 { return cmplx.Pow(v, 0.5) })
+	D.Fdiag(func(v complex128) complex128 { return cmplx.Pow(v, 0.5) })
 
 	sqrtx := matrix.MatMul(V, D, V.Dagger())
 	for _, row := range sqrtx.Seq2() {
@@ -48,7 +42,7 @@ func ExampleEigenJacobi_pow1p5() {
 	)
 
 	V, D := decomp.EigenJacobi(x, 10)
-	diagF(D, func(v complex128) complex128 { return cmplx.Pow(v, 1.5) })
+	D.Fdiag(func(v complex128) complex128 { return cmplx.Pow(v, 1.5) })
 
 	x1p5 := matrix.MatMul(V, D, V.Dagger())
 	for _, row := range x1p5.Seq2() {
@@ -67,8 +61,7 @@ func ExampleEigenJacobi_pow1p5() {
 func ExampleEigenJacobi_exp() {
 	exp := func(x *matrix.Matrix, theta float64) *matrix.Matrix {
 		V, D := decomp.EigenJacobi(x, 10)
-		diagF(D, func(v complex128) complex128 { return cmplx.Exp(-1i * complex(theta/2, 0) * v) })
-
+		D.Fdiag(func(v complex128) complex128 { return cmplx.Exp(-1i * complex(theta/2, 0) * v) })
 		return matrix.MatMul(V, D, V.Dagger())
 	}
 
