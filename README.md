@@ -1,2 +1,3 @@
 # decomp
-Matrix decomposition for Go
+
+ * Matrix decomposition for Go
