@@ -9,22 +9,20 @@ import (
 )
 
 // EigenQR performs eigen decomposition of a matrix using the Schur decomposition.
-func EigenQR(m *matrix.Matrix, qr QRFunc, iter int, eps ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
-	q, t := Schur(m, qr, iter, eps...)
-	vectors, lambdas = EigenUpperT(t, eps...)
+func EigenQR(m *matrix.Matrix, qr QRFunc, iter int, tol ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
+	q, t := Schur(m, qr, iter, tol...)
+	vectors, lambdas = EigenUpperTriangular(t, tol...)
 	return matrix.MatMul(q, vectors), lambdas
 }
 
-// EigenUpperT performs eigen decomposition of an upper triangular matrix.
-func EigenUpperT(t *matrix.Matrix, eps ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
+// EigenUpperTriangular performs eigen decomposition of an upper triangular matrix.
+func EigenUpperTriangular(t *matrix.Matrix, tol ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
 	lambdas = matrix.ZeroLike(t)
 	for i := range t.Rows {
 		lambdas.Set(i, i, t.At(i, i))
 	}
 
 	vectors = matrix.Zero(t.Rows, t.Rows)
-	e := epsilon.E13(eps...)
-
 	for k := range t.Rows {
 		x := make([]complex128, t.Rows)
 		x[k] = 1.0
@@ -32,7 +30,7 @@ func EigenUpperT(t *matrix.Matrix, eps ...float64) (vectors *matrix.Matrix, lamb
 		lambdak := t.At(k, k)
 		for i := k - 1; i >= 0; i-- {
 			diff := t.At(i, i) - lambdak
-			if cmplx.Abs(diff) < e {
+			if epsilon.IsZero(diff, tol...) {
 				x[i] = 0.0
 				continue
 			}
@@ -46,7 +44,7 @@ func EigenUpperT(t *matrix.Matrix, eps ...float64) (vectors *matrix.Matrix, lamb
 		}
 
 		nx := norm(x)
-		if nx > e {
+		if !epsilon.IsZeroF64(nx, tol...) {
 			for i := range x {
 				x[i] /= complex(nx, 0)
 			}
@@ -62,21 +60,20 @@ func EigenUpperT(t *matrix.Matrix, eps ...float64) (vectors *matrix.Matrix, lamb
 
 // EigenJacobi performs eigen decomposition of a matrix using the Jacobi method.
 // The matrix `a` must be Hermitian.
-func EigenJacobi(a *matrix.Matrix, iter int, eps ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
+func EigenJacobi(a *matrix.Matrix, iter int, tol ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
 	n := a.Rows
 	v, ak := matrix.Identity(n), a.Clone()
-	e := epsilon.E13(eps...)
 
 	for range iter {
 		for i := range n - 1 {
 			for j := i + 1; j < n; j++ {
 				a, b, c := ak.At(i, i), ak.At(j, j), ak.At(i, j)
-				if cmplx.Abs(c) < e {
+				if epsilon.IsZero(c, tol...) {
 					continue
 				}
 
 				diff, phi := b-a, complex(math.Pi/4, 0)
-				if cmplx.Abs(diff) > e {
+				if !epsilon.IsZero(diff, tol...) {
 					phi = 0.5 * cmplx.Atan(2*c/diff)
 				}
 

@@ -142,17 +142,16 @@ func (m *Matrix) Dagger() *Matrix {
 }
 
 // Inverse returns an inverse matrix of m.
-func (m *Matrix) Inverse(eps ...float64) *Matrix {
+func (m *Matrix) Inverse(tol ...float64) *Matrix {
 	p, q := m.Dimension()
 	mm := m.Clone()
-	e := epsilon.E13(eps...)
 
 	out := Identity(p)
 	for i := range p {
-		if cmplx.Abs(mm.At(i, i)) < e {
+		if epsilon.IsZero(mm.At(i, i), tol...) {
 			// swap rows
 			for r := i + 1; r < p; r++ {
-				if cmplx.Abs(mm.At(r, i)) < e {
+				if epsilon.IsZero(mm.At(r, i), tol...) {
 					continue
 				}
 
@@ -206,7 +205,7 @@ func (m *Matrix) Swap(i, j int) *Matrix {
 
 // Equals returns true if m equals n.
 // If eps is not given, epsilon.E13 is used.
-func (m *Matrix) Equals(n *Matrix, eps ...float64) bool {
+func (m *Matrix) Equals(n *Matrix, tol ...float64) bool {
 	p, q := m.Dimension()
 	a, b := n.Dimension()
 
@@ -214,9 +213,8 @@ func (m *Matrix) Equals(n *Matrix, eps ...float64) bool {
 		return false
 	}
 
-	e := epsilon.E13(eps...)
 	for i := range m.Data {
-		if cmplx.Abs(m.Data[i]-n.Data[i]) > e {
+		if !epsilon.IsClose(m.Data[i], n.Data[i], tol...) {
 			return false
 		}
 	}
@@ -235,15 +233,14 @@ func (m *Matrix) IsUnitary(eps ...float64) bool {
 }
 
 // IsUpperTriangular returns true if m is upper triangular matrix.
-func (m *Matrix) IsUpperTriangular(eps ...float64) bool {
+func (m *Matrix) IsUpperTriangular(tol ...float64) bool {
 	if !m.IsSquare() {
 		return false
 	}
 
-	e := epsilon.E13(eps...)
 	for i := 1; i < m.Rows; i++ {
 		for j := range i {
-			if cmplx.Abs(m.At(i, j)) > e {
+			if !epsilon.IsZero(m.At(i, j), tol...) {
 				return false
 			}
 		}
@@ -253,15 +250,14 @@ func (m *Matrix) IsUpperTriangular(eps ...float64) bool {
 }
 
 // IsHessenberg returns true if m is Hessenberg matrix.
-func (m *Matrix) IsHessenberg(eps ...float64) bool {
+func (m *Matrix) IsHessenberg(tol ...float64) bool {
 	if !m.IsSquare() {
 		return false
 	}
 
-	e := epsilon.E13(eps...)
 	for i := 2; i < m.Rows; i++ {
 		for j := range i - 1 {
-			if cmplx.Abs(m.At(i, j)) > e {
+			if !epsilon.IsZero(m.At(i, j), tol...) {
 				return false
 			}
 		}
@@ -271,19 +267,18 @@ func (m *Matrix) IsHessenberg(eps ...float64) bool {
 }
 
 // IsDiagonal returns true if m is diagonal matrix.
-func (m *Matrix) IsDiagonal(eps ...float64) bool {
+func (m *Matrix) IsDiagonal(tol ...float64) bool {
 	if !m.IsSquare() {
 		return false
 	}
 
-	e := epsilon.E13(eps...)
 	for i := range m.Rows {
 		for j := range m.Cols {
 			if i == j {
 				continue
 			}
 
-			if cmplx.Abs(m.At(i, j)) > e {
+			if !epsilon.IsZero(m.At(i, j), tol...) {
 				return false
 			}
 		}

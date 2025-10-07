@@ -39,7 +39,7 @@ func rz(theta float64) *matrix.Matrix {
 func ExampleQR_rank1() {
 	isZero := func(row []complex128) bool {
 		for _, v := range row {
-			if cmplx.Abs(v) < epsilon.E13() {
+			if epsilon.IsZero(v) {
 				continue
 			}
 

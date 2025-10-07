@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/itsubaki/decomp"
-	"github.com/itsubaki/decomp/epsilon"
 	"github.com/itsubaki/decomp/matrix"
 )
 
@@ -117,15 +116,13 @@ func TestEigenQR(t *testing.T) {
 
 func TestEigenUpperT(t *testing.T) {
 	cases := []struct {
-		in  *matrix.Matrix
-		eps float64
+		in *matrix.Matrix
 	}{
 		{
 			matrix.New(
 				[]complex128{1, 2},
 				[]complex128{0, 3},
 			),
-			epsilon.E13(),
 		},
 		{
 			matrix.New(
@@ -133,7 +130,6 @@ func TestEigenUpperT(t *testing.T) {
 				[]complex128{0, 2, 0},
 				[]complex128{0, 0, 3},
 			),
-			epsilon.E13(),
 		},
 		{
 			matrix.New(
@@ -143,7 +139,6 @@ func TestEigenUpperT(t *testing.T) {
 				[]complex128{0, 0, 0, 4, 5},
 				[]complex128{0, 0, 0, 0, 5},
 			),
-			epsilon.E13(),
 		},
 		{
 			matrix.New(
@@ -151,7 +146,6 @@ func TestEigenUpperT(t *testing.T) {
 				[]complex128{0, 2 + 2i, 1 - 0.5i},
 				[]complex128{0, 0, 3 - 1i},
 			),
-			epsilon.E13(),
 		},
 		{
 
@@ -161,7 +155,6 @@ func TestEigenUpperT(t *testing.T) {
 				[]complex128{0, 0, 2, 0},
 				[]complex128{0, 0, 0, 1},
 			),
-			epsilon.E13(),
 		},
 		{
 			matrix.New(
@@ -172,25 +165,17 @@ func TestEigenUpperT(t *testing.T) {
 				[]complex128{0, 0, 0, 0, 6, 0},
 				[]complex128{0, 0, 0, 0, 0, 5},
 			),
-			epsilon.E13(),
-		},
-		{
-			matrix.New(
-				[]complex128{1, 0.0001},
-				[]complex128{0, 1},
-			),
-			1e-2,
 		},
 	}
 
 	for _, c := range cases {
-		P, D := decomp.EigenUpperT(c.in, c.eps)
+		P, D := decomp.EigenUpperTriangular(c.in)
 
-		if !D.IsDiagonal(c.eps) {
+		if !D.IsDiagonal() {
 			t.Errorf("D is not diagonal")
 		}
 
-		if !matrix.MatMul(P, D, P.Inverse()).Equals(c.in, c.eps) {
+		if !matrix.MatMul(P, D, P.Inverse()).Equals(c.in) {
 			t.Errorf("P * D * P^-1 does not equal t")
 		}
 	}

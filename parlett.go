@@ -1,8 +1,6 @@
 package decomp
 
 import (
-	"math/cmplx"
-
 	"github.com/itsubaki/decomp/epsilon"
 	"github.com/itsubaki/decomp/matrix"
 )
@@ -11,7 +9,7 @@ type ParlettF func(z complex128) complex128
 
 // Parlett computes the matrix function f(t) using Parlett recursion.
 // The input matrix t must be an upper triangular matrix.
-func Parlett(t *matrix.Matrix, f, df ParlettF, eps ...float64) *matrix.Matrix {
+func Parlett(t *matrix.Matrix, f, df ParlettF, tol ...float64) *matrix.Matrix {
 	n := t.Rows
 	a := matrix.Zero(n, n)
 
@@ -19,7 +17,6 @@ func Parlett(t *matrix.Matrix, f, df ParlettF, eps ...float64) *matrix.Matrix {
 		a.Set(i, i, f(t.At(i, i)))
 	}
 
-	e := epsilon.E13(eps...)
 	for d := 1; d < n; d++ {
 		for i := range n - d {
 			j := i + d
@@ -33,7 +30,7 @@ func Parlett(t *matrix.Matrix, f, df ParlettF, eps ...float64) *matrix.Matrix {
 
 			// denominator
 			denom := t.At(j, j) - t.At(i, i)
-			if cmplx.Abs(denom) < e {
+			if epsilon.IsZero(denom, tol...) {
 				a.Set(i, j, tij*df(t.At(i, i))+num)
 				continue
 			}

@@ -10,14 +10,13 @@ import (
 
 // QR performs the QR decomposition of matrix a using the Modified Gram-Schmidt process.
 // It returns Q (orthonormal columns) and R (upper triangular) such that A = Q * R.
-func QR(a *matrix.Matrix, eps ...float64) (q *matrix.Matrix, r *matrix.Matrix) {
+func QR(a *matrix.Matrix, tol ...float64) (q *matrix.Matrix, r *matrix.Matrix) {
 	rows, cols := a.Dimension()
 	q, r = a.Clone(), matrix.Zero(cols, cols)
-	e := epsilon.E13(eps...)
 
 	for k := range cols {
 		nqk := norm(column(q, k))
-		if nqk < e {
+		if epsilon.IsZeroF64(nqk, tol...) {
 			// If the norm is smaller than a small threshold (effectively zero),
 			// treat the k-th vector as numerically zero to avoid division by zero
 			// and preserve numerical stability.
@@ -92,7 +91,7 @@ func zero(a *matrix.Matrix, j int) {
 
 // QRHH performs the QR decomposition using the Householder transformation.
 // It returns Q (orthonormal columns) and R (upper triangular) such that A = Q * R.
-func QRHH(a *matrix.Matrix, eps ...float64) (q *matrix.Matrix, r *matrix.Matrix) {
+func QRHH(a *matrix.Matrix, tol ...float64) (q *matrix.Matrix, r *matrix.Matrix) {
 	rows, cols := a.Dimension()
 	q, r = matrix.Identity(rows), a.Clone()
 
@@ -102,7 +101,7 @@ func QRHH(a *matrix.Matrix, eps ...float64) (q *matrix.Matrix, r *matrix.Matrix)
 			x[i-k] = r.At(i, k)
 		}
 
-		u, ok := householder(x, eps...)
+		u, ok := householder(x, tol...)
 		if !ok {
 			continue
 		}
@@ -135,11 +134,9 @@ func QRHH(a *matrix.Matrix, eps ...float64) (q *matrix.Matrix, r *matrix.Matrix)
 	return q, r
 }
 
-func householder(x []complex128, eps ...float64) ([]complex128, bool) {
-	e := epsilon.E13(eps...)
-
+func householder(x []complex128, tol ...float64) ([]complex128, bool) {
 	alpha := complex(norm(x), 0)
-	if cmplx.Abs(x[0]) > e {
+	if !epsilon.IsZero(x[0], tol...) {
 		alpha *= -x[0] / complex(cmplx.Abs(x[0]), 0)
 	}
 
@@ -148,7 +145,7 @@ func householder(x []complex128, eps ...float64) ([]complex128, bool) {
 	copy(u[1:], x[1:])
 
 	nu := norm(u)
-	if nu < e {
+	if epsilon.IsZeroF64(nu, tol...) {
 		return nil, false
 	}
 
