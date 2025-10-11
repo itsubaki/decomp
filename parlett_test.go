@@ -25,7 +25,7 @@ func ExampleParlett() {
 
 	f, df := pow(2)
 	t2 := decomp.Parlett(t, f, df)
-	fmt.Println(t2.Equals(matrix.MatMul(t, t)))
+	fmt.Println(t2.Equal(matrix.MatMul(t, t)))
 
 	// Output:
 	// true

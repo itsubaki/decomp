@@ -26,7 +26,7 @@ func ExampleEigenJacobi_pow0p5() {
 	}
 
 	sqrtx2 := matrix.MatMul(sqrtx, sqrtx)
-	fmt.Println(sqrtx2.Equals(x))
+	fmt.Println(sqrtx2.Equal(x))
 
 	// Output:
 	// [(0.500+0.500i) (0.500-0.500i)]
@@ -49,7 +49,7 @@ func ExampleEigenJacobi_pow1p5() {
 	}
 
 	x1p52 := matrix.MatMul(x1p5, x1p5)
-	fmt.Println(x1p52.Equals(x))
+	fmt.Println(x1p52.Equal(x))
 
 	// Output:
 	// [(0.500-0.500i) (0.500+0.500i)]
@@ -71,7 +71,7 @@ func ExampleEigenJacobi_exp() {
 
 	theta := rand.Float64()
 	expiX := exp(x, theta)
-	fmt.Println(expiX.Equals(rx(theta)))
+	fmt.Println(expiX.Equal(rx(theta)))
 
 	// Output:
 	// true
@@ -107,7 +107,7 @@ func TestEigenQR(t *testing.T) {
 				t.Errorf("D is not diagonal")
 			}
 
-			if !matrix.MatMul(P, D, P.Inverse()).Equals(c.in) {
+			if !matrix.MatMul(P, D, P.Inverse()).Equal(c.in) {
 				t.Errorf("P * D * P^-1 does not equal a")
 			}
 		}
@@ -175,7 +175,7 @@ func TestEigenUpperT(t *testing.T) {
 			t.Errorf("D is not diagonal")
 		}
 
-		if !matrix.MatMul(P, D, P.Inverse()).Equals(c.in) {
+		if !matrix.MatMul(P, D, P.Inverse()).Equal(c.in) {
 			t.Errorf("P * D * P^-1 does not equal t")
 		}
 	}
@@ -228,7 +228,7 @@ func TestEigenJacobi(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		if !c.in.Equals(c.in.Dagger()) {
+		if !c.in.Equal(c.in.Dagger()) {
 			t.Errorf("input is not Hermitian")
 		}
 
@@ -242,7 +242,7 @@ func TestEigenJacobi(t *testing.T) {
 			t.Errorf("D is not diagonal")
 		}
 
-		if !matrix.MatMul(V, D, V.Dagger()).Equals(c.in) {
+		if !matrix.MatMul(V, D, V.Dagger()).Equal(c.in) {
 			t.Errorf("V * D * V^dagger does not equal a")
 			for _, row := range V.Seq2() {
 				t.Log(row)

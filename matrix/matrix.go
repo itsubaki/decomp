@@ -203,9 +203,8 @@ func (m *Matrix) Swap(i, j int) *Matrix {
 	}
 }
 
-// Equals returns true if m equals n.
-// If eps is not given, epsilon.E13 is used.
-func (m *Matrix) Equals(n *Matrix, tol ...float64) bool {
+// Equal returns true if m equals n.
+func (m *Matrix) Equal(n *Matrix, tol ...float64) bool {
 	p, q := m.Dimension()
 	a, b := n.Dimension()
 
@@ -228,8 +227,8 @@ func (m *Matrix) IsSquare() bool {
 }
 
 // IsUnitary returns true if m is unitary matrix.
-func (m *Matrix) IsUnitary(eps ...float64) bool {
-	return m.IsSquare() && m.MatMul(m.Dagger()).Equals(Identity(m.Rows), eps...)
+func (m *Matrix) IsUnitary(tol ...float64) bool {
+	return m.IsSquare() && m.MatMul(m.Dagger()).Equal(Identity(m.Rows), tol...)
 }
 
 // IsUpperTriangular returns true if m is upper triangular matrix.

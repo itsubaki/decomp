@@ -55,7 +55,7 @@ func TestHessenberg(t *testing.T) {
 			t.Errorf("T is not in Hessenberg form")
 		}
 
-		if !matrix.MatMul(Q, T, Q.Dagger()).Equals(c.in) {
+		if !matrix.MatMul(Q, T, Q.Dagger()).Equal(c.in) {
 			t.Errorf("Q * T * Q^dagger does not equal a")
 		}
 	}

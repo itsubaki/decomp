@@ -189,7 +189,7 @@ func TestQR(t *testing.T) {
 				t.Errorf("R is not upper triangular")
 			}
 
-			if !matrix.MatMul(Q, R).Equals(c.in) {
+			if !matrix.MatMul(Q, R).Equal(c.in) {
 				t.Errorf("matmul(Q, R) does not equal a")
 			}
 		}
