@@ -107,7 +107,13 @@ func TestEigenQR(t *testing.T) {
 				t.Errorf("D is not diagonal")
 			}
 
-			if !matrix.MatMul(P, D, P.Inverse()).Equal(c.in) {
+			Pinv, err := P.Inverse()
+			if err != nil {
+				t.Errorf("P is not invertible")
+				continue
+			}
+
+			if !matrix.MatMul(P, D, Pinv).Equal(c.in) {
 				t.Errorf("P * D * P^-1 does not equal a")
 			}
 		}
@@ -175,7 +181,13 @@ func TestEigenUpperT(t *testing.T) {
 			t.Errorf("D is not diagonal")
 		}
 
-		if !matrix.MatMul(P, D, P.Inverse()).Equal(c.in) {
+		Pinv, err := P.Inverse()
+		if err != nil {
+			t.Errorf("P is not invertible")
+			continue
+		}
+
+		if !matrix.MatMul(P, D, Pinv).Equal(c.in) {
 			t.Errorf("P * D * P^-1 does not equal t")
 		}
 	}

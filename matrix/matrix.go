@@ -1,6 +1,7 @@
 package matrix
 
 import (
+	"fmt"
 	"iter"
 	"math/cmplx"
 
@@ -142,23 +143,31 @@ func (m *Matrix) Dagger() *Matrix {
 }
 
 // Inverse returns an inverse matrix of m.
-func (m *Matrix) Inverse(tol ...float64) *Matrix {
+func (m *Matrix) Inverse(tol ...float64) (*Matrix, error) {
+	if !m.IsSquare() {
+		return nil, fmt.Errorf("matrix is not square")
+	}
+
 	p, q := m.Dimension()
 	mm := m.Clone()
 
 	out := Identity(p)
 	for i := range p {
-		if epsilon.IsZero(mm.At(i, i), tol...) {
-			// swap rows
-			for r := i + 1; r < p; r++ {
-				if epsilon.IsZero(mm.At(r, i), tol...) {
-					continue
-				}
-
-				mm = mm.Swap(i, r)
-				out = out.Swap(i, r)
-				break
+		piv, pivAbs := i, cmplx.Abs(mm.At(i, i))
+		for r := i + 1; r < p; r++ {
+			abs := cmplx.Abs(mm.At(r, i))
+			if abs > pivAbs {
+				piv, pivAbs = r, abs
 			}
+		}
+
+		if epsilon.IsZeroF64(pivAbs, tol...) {
+			return nil, fmt.Errorf("matrix is singular")
+		}
+
+		if piv != i {
+			mm = mm.Swap(i, piv)
+			out = out.Swap(i, piv)
 		}
 
 		c := 1 / mm.At(i, i)
@@ -180,7 +189,7 @@ func (m *Matrix) Inverse(tol ...float64) *Matrix {
 		}
 	}
 
-	return out
+	return out, nil
 }
 
 // Swap returns a matrix of m with i-th and j-th rows swapped.
@@ -215,6 +224,31 @@ func (m *Matrix) Equal(n *Matrix, tol ...float64) bool {
 	for i := range m.Data {
 		if !epsilon.IsClose(m.Data[i], n.Data[i], tol...) {
 			return false
+		}
+	}
+
+	return true
+}
+
+// IsIdentity returns true if m is identity matrix.
+func (m *Matrix) IsIdentity(tol ...float64) bool {
+	if !m.IsSquare() {
+		return false
+	}
+
+	for i := range m.Rows {
+		for j := range m.Cols {
+			if i == j {
+				if !epsilon.IsOne(m.At(i, j), tol...) {
+					return false
+				}
+
+				continue
+			}
+
+			if !epsilon.IsZero(m.At(i, j), tol...) {
+				return false
+			}
 		}
 	}
 

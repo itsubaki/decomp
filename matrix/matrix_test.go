@@ -150,3 +150,48 @@ func TestIsHessenberg(t *testing.T) {
 		}
 	}
 }
+
+func TestInverse(t *testing.T) {
+	cases := []struct {
+		in     *matrix.Matrix
+		errMsg string
+	}{
+		{
+			// invertible
+			in: matrix.New(
+				[]complex128{4, 7},
+				[]complex128{2, 6},
+			),
+		},
+		{
+			// singular
+			in: matrix.New(
+				[]complex128{1, 2},
+				[]complex128{2, 4},
+			),
+			errMsg: "matrix is singular",
+		},
+		{
+			// pivoting
+			in: matrix.New(
+				[]complex128{0, 1},
+				[]complex128{1, 0},
+			),
+		},
+	}
+
+	for _, c := range cases {
+		inv, err := c.in.Inverse()
+		if err != nil {
+			if err.Error() != c.errMsg {
+				t.Errorf("unexpected error: %s", err.Error())
+			}
+
+			continue
+		}
+
+		if !matrix.MatMul(c.in, inv).IsIdentity() {
+			t.Errorf("A * A^-1 does not equal I")
+		}
+	}
+}

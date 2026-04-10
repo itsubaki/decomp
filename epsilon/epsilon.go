@@ -29,6 +29,11 @@ func IsZero(a complex128, tol ...float64) bool {
 	return IsClose(a, 0.0, tol...)
 }
 
+// IsOne returns true if a complex128 number is close to one within the given tolerances.
+func IsOne(a complex128, tol ...float64) bool {
+	return IsClose(a, 1.0, tol...)
+}
+
 // IsClose returns true if two complex128 numbers are close within the given tolerances.
 func IsClose(a, b complex128, tol ...float64) bool {
 	atol, rtol := Tol(tol...)
