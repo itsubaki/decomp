@@ -1,3 +1,3 @@
 # decomp
 
- - Matrix decomposition library in Go
+Matrix decomposition library in Go.
