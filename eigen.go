@@ -58,43 +58,78 @@ func EigenUpperTriangular(t *matrix.Matrix, tol ...float64) (vectors *matrix.Mat
 	return vectors, lambdas
 }
 
-// EigenJacobi performs eigen decomposition of a matrix using the Jacobi method.
-// The matrix `a` must be Hermitian.
+// EigenJacobi returns the eigenvectors and eigenvalues of a matrix using the Jacobi method.
+// The input matrix a must be hermitian.
 func EigenJacobi(a *matrix.Matrix, iter int, tol ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
 	n := a.Rows
 	v, ak := matrix.Identity(n), a.Clone()
 
 	for range iter {
+		var max float64
+		var p, q int
+
+		// find the largest off-diagonal element in ak.
 		for i := range n - 1 {
 			for j := i + 1; j < n; j++ {
-				a, b, c := ak.At(i, i), ak.At(j, j), ak.At(i, j)
-				if epsilon.IsZero(c, tol...) {
-					continue
+				val := cmplx.Abs(ak.At(i, j))
+				if val > max {
+					max, p, q = val, i, j
 				}
-
-				diff, phi := b-a, complex(math.Pi/4, 0)
-				if !epsilon.IsZero(diff, tol...) {
-					phi = 0.5 * cmplx.Atan(2*c/diff)
-				}
-
-				cos := cmplx.Cos(phi)
-				sin := cmplx.Sin(phi) * cmplx.Rect(1, cmplx.Phase(c)) // cmplx.Exp(complex(0, cmplx.Phase(c)))
-
-				g := matrix.Identity(n)
-				g.Set(i, i, cos)
-				g.Set(i, j, -cmplx.Conj(sin))
-				g.Set(j, i, sin)
-				g.Set(j, j, cos)
-
-				v = matrix.MatMul(v, g)
-				ak = matrix.MatMul(g.Dagger(), ak, g)
 			}
+		}
+
+		if epsilon.IsZeroF64(max, tol...) {
+			break
+		}
+
+		// compute the rotation angle.
+		a, b, c := ak.At(p, p), ak.At(q, q), ak.At(p, q)
+		theta := math.Pi / 4
+		if !epsilon.IsZero(b-a, tol...) {
+			theta = 0.5 * math.Atan2(2*cmplx.Abs(c), real(b-a))
+		}
+
+		phase := cmplx.Rect(1, cmplx.Phase(c))
+		cos := complex(math.Cos(theta), 0)
+		sin := complex(math.Sin(theta), 0) * phase
+
+		// construct the Givens rotation matrix.
+		for i := range n {
+			if i == p || i == q {
+				continue
+			}
+
+			aip, aiq := ak.At(i, p), ak.At(i, q)
+			ak.Set(i, p, cos*aip-cmplx.Conj(sin)*aiq)
+			ak.Set(p, i, cmplx.Conj(ak.At(i, p)))
+			ak.Set(i, q, sin*aip+cos*aiq)
+			ak.Set(q, i, cmplx.Conj(ak.At(i, q)))
+		}
+
+		// update the diagonal elements.
+		absSin2 := real(sin * cmplx.Conj(sin))
+		ak.Set(p, p, cos*cos*a+complex(absSin2, 0)*b-2*cos*cmplx.Conj(sin)*c)
+		ak.Set(q, q, complex(absSin2, 0)*a+cos*cos*b+2*cos*cmplx.Conj(sin)*c)
+		ak.Set(p, q, 0)
+		ak.Set(q, p, 0)
+
+		// update the eigenvector matrix.
+		for i := range n {
+			vip, viq := v.At(i, p), v.At(i, q)
+			v.Set(i, p, cos*vip-cmplx.Conj(sin)*viq)
+			v.Set(i, q, sin*vip+cos*viq)
 		}
 	}
 
+	// construct the diagonal matrix of eigenvalues.
 	d := matrix.ZeroLike(ak)
 	for i := range n {
-		d.Set(i, i, ak.At(i, i))
+		val := ak.At(i, i)
+		if epsilon.IsZero(val, tol...) {
+			val = 0
+		}
+
+		d.Set(i, i, val)
 	}
 
 	return v, d
