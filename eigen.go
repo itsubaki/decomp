@@ -17,12 +17,12 @@ func EigenQR(m *matrix.Matrix, qr QRFunc, iter int, tol ...float64) (vectors *ma
 
 // EigenUpperTriangular performs eigen decomposition of an upper triangular matrix.
 func EigenUpperTriangular(t *matrix.Matrix, tol ...float64) (vectors *matrix.Matrix, lambdas *matrix.Matrix) {
-	lambdas = matrix.ZeroLike(t)
+	lambdas = matrix.ZerosLike(t)
 	for i := range t.Rows {
 		lambdas.Set(i, i, t.At(i, i))
 	}
 
-	vectors = matrix.Zero(t.Rows, t.Rows)
+	vectors = matrix.Zeros(t.Rows, t.Rows)
 	for k := range t.Rows {
 		x := make([]complex128, t.Rows)
 		x[k] = 1.0
@@ -122,7 +122,7 @@ func EigenJacobi(a *matrix.Matrix, iter int, tol ...float64) (vectors *matrix.Ma
 	}
 
 	// construct the diagonal matrix of eigenvalues.
-	d := matrix.ZeroLike(ak)
+	d := matrix.ZerosLike(ak)
 	for i := range n {
 		val := ak.At(i, i)
 		if epsilon.IsZero(val, tol...) {

@@ -35,8 +35,8 @@ func New(z ...[]complex128) *Matrix {
 	}
 }
 
-// Zero returns a zero matrix.
-func Zero(rows, cols int) *Matrix {
+// Zeros returns a zero matrix.
+func Zeros(rows, cols int) *Matrix {
 	return &Matrix{
 		Rows: rows,
 		Cols: cols,
@@ -44,8 +44,8 @@ func Zero(rows, cols int) *Matrix {
 	}
 }
 
-// ZeroLike returns a zero matrix of same size as m.
-func ZeroLike(m *Matrix) *Matrix {
+// ZerosLike returns a zero matrix of same size as m.
+func ZerosLike(m *Matrix) *Matrix {
 	rows, cols := m.Dimension()
 	return &Matrix{
 		Rows: rows,
@@ -56,7 +56,7 @@ func ZeroLike(m *Matrix) *Matrix {
 
 // Identity returns an identity matrix.
 func Identity(size int) *Matrix {
-	m := Zero(size, size)
+	m := Zeros(size, size)
 	for i := range size {
 		m.Set(i, i, 1)
 	}
@@ -66,7 +66,7 @@ func Identity(size int) *Matrix {
 
 // Clone returns a clone of matrix.
 func (m *Matrix) Clone() *Matrix {
-	out := ZeroLike(m)
+	out := ZerosLike(m)
 	copy(out.Data, m.Data)
 	return out
 }
@@ -117,7 +117,7 @@ func (m *Matrix) MatMul(n *Matrix) *Matrix {
 	a, b := m.Dimension()
 	_, p := n.Dimension()
 
-	out := Zero(a, p)
+	out := Zeros(a, p)
 	for i := range a {
 		for k := range b {
 			mik := m.Data[i*b+k]
@@ -132,7 +132,7 @@ func (m *Matrix) MatMul(n *Matrix) *Matrix {
 
 // Dagger returns conjugate transpose matrix.
 func (m *Matrix) Dagger() *Matrix {
-	out := ZeroLike(m)
+	out := ZerosLike(m)
 	for i := range m.Rows {
 		for j := range m.Cols {
 			out.Set(j, i, cmplx.Conj(m.At(i, j)))

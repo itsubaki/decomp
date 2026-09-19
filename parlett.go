@@ -11,7 +11,7 @@ type ParlettF func(z complex128) complex128
 // The input matrix t must be an upper triangular matrix.
 func Parlett(t *matrix.Matrix, f, df ParlettF, tol ...float64) *matrix.Matrix {
 	n := t.Rows
-	a := matrix.Zero(n, n)
+	a := matrix.Zeros(n, n)
 
 	for i := range n {
 		a.Set(i, i, f(t.At(i, i)))

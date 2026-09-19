@@ -12,7 +12,7 @@ import (
 // It returns Q (orthonormal columns) and R (upper triangular) such that A = Q * R.
 func QR(a *matrix.Matrix, tol ...float64) (q *matrix.Matrix, r *matrix.Matrix) {
 	rows, cols := a.Dimension()
-	q, r = a.Clone(), matrix.Zero(cols, cols)
+	q, r = a.Clone(), matrix.Zeros(cols, cols)
 
 	for k := range cols {
 		nqk := norm(column(q, k))
